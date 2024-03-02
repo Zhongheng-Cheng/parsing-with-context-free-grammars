@@ -58,7 +58,6 @@ class Pcfg(object):
             
             # checking all probabilities for the same lhs symbol sum to 1.0
             prob_sum = fsum([rule[2] for rule in self.lhs_to_rules[lhs_symbol]])
-            print(prob_sum)
             if not isclose(prob_sum, 1.0):
                 return False
         return True 
@@ -75,5 +74,5 @@ class Pcfg(object):
 if __name__ == "__main__":
     with open(sys.argv[1],'r') as grammar_file:
         grammar = Pcfg(grammar_file)
-    print(grammar.verify_grammar())
+    # print(grammar.verify_grammar())
         
