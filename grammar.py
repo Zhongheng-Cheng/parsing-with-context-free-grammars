@@ -16,7 +16,7 @@ class Pcfg(object):
     def __init__(self, grammar_file): 
         self.rhs_to_rules = defaultdict(list)
         self.lhs_to_rules = defaultdict(list)
-        self.startsymbol = None 
+        self.startsymbol = "TOP"
         self.read_rules(grammar_file)
 
         # assuming lhs symbols of the rules make up the inventory of nonterminals

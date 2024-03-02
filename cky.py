@@ -124,6 +124,7 @@ class CkyParser(object):
         if pi_table[0][-1]:
             return True
         return False
+    
        
     def parse_with_backpointers(self, tokens):
         """
@@ -167,12 +168,15 @@ class CkyParser(object):
         return table, probs
 
 
-def get_tree(chart, i,j,nt): 
+def get_tree(chart, i, j, nt): 
     """
     Return the parse-tree rooted in non-terminal nt and covering span i,j.
     """
-    # TODO: Part 4
-    return None 
+    if isinstance(chart[(i, j)][nt], str):
+        return (nt, chart[(i, j)][nt])
+    nt_left, i_left, j_left = chart[(i, j)][nt][0]
+    nt_right, i_right, j_right = chart[(i, j)][nt][1]
+    return (nt, get_tree(chart, i_left, j_left, nt_left), get_tree(chart, i_right, j_right, nt_right))
  
        
 if __name__ == "__main__":
@@ -186,4 +190,5 @@ if __name__ == "__main__":
         table,probs = parser.parse_with_backpointers(toks)
         assert check_table_format(table)
         assert check_probs_format(probs)
+        print(get_tree(table, 0, len(toks), grammar.startsymbol))
         
