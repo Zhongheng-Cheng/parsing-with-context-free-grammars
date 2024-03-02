@@ -95,9 +95,35 @@ class CkyParser(object):
         Membership checking. Parse the input tokens and return True if 
         the sentence is in the language described by the grammar. Otherwise
         return False
+
+        Implementation of the CKY Algorithm
         """
-        # TODO, part 2
-        return False 
+        def find_lhs(symbol_list1, symbol_list2):
+            res = []
+            for symbol1 in symbol_list1:
+                for symbol2 in symbol_list2:
+                    res += [rule[0] for rule in self.grammar.rhs_to_rules[(symbol1, symbol2)]]
+            return res
+
+        n = len(tokens)
+        pi_table = [[[] for _ in range(n + 1)] for _ in range(n + 1)]
+        
+        # initialization
+        for i in range(n):
+            pi_table[i][i + 1] = [rule[0] for rule in self.grammar.rhs_to_rules[(tokens[i],)]]
+            
+        # main loop
+        for length in range(2, n + 1):
+            for i in range(n - length + 1):
+                j = i + length
+                for k in range(i + 1, j):
+                    lhs_symbols = find_lhs(pi_table[i][k], pi_table[k][j])
+                    pi_table[i][j] += lhs_symbols
+        
+        # get result
+        if pi_table[0][-1]:
+            return True
+        return False
        
     def parse_with_backpointers(self, tokens):
         """
@@ -123,7 +149,8 @@ if __name__ == "__main__":
         grammar = Pcfg(grammar_file) 
         parser = CkyParser(grammar)
         toks =['flights', 'from','miami', 'to', 'cleveland','.'] 
-        #print(parser.is_in_language(toks))
+        # toks =['miami', 'flights','cleveland', 'from', 'to','.']
+        print(parser.is_in_language(toks))
         #table,probs = parser.parse_with_backpointers(toks)
         #assert check_table_format(chart)
         #assert check_probs_format(probs)
