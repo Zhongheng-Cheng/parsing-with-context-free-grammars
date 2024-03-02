@@ -128,10 +128,42 @@ class CkyParser(object):
     def parse_with_backpointers(self, tokens):
         """
         Parse the input tokens and return a parse table and a probability table.
+
+        Modification of CKY Algorithm from is_in_language(), and use (and return) specific data structures.
         """
-        # TODO, part 3
-        table= None
-        probs = None
+
+        table= {}
+        probs = {}
+        n = len(tokens)
+
+        # initialization
+        for i in range(n):
+            table[(i, i + 1)] = {}
+            probs[(i, i + 1)] = {}
+            for rule in self.grammar.rhs_to_rules[(tokens[i],)]:
+                if (rule[0] not in table[(i, i + 1)]) or \
+                    (rule[0] in table[(i, i + 1)] and math.log(rule[2]) > probs[(i, i + 1)][rule[0]]):
+                    table[(i, i + 1)][rule[0]] = tokens[i]
+                    probs[(i, i + 1)][rule[0]] = math.log(rule[2])
+
+        # main loop
+        for length in range(2, n + 1):
+            for i in range(n - length + 1):
+                j = i + length
+                table[(i, j)] = {}
+                probs[(i, j)] = {}
+                for k in range(i + 1, j):
+                    # maintain the backpointers with highest probability
+                    for symbol1 in table[(i, k)]:
+                        for symbol2 in table[(k, j)]:
+                            for rule in self.grammar.rhs_to_rules[(symbol1, symbol2)]:
+                                prob = math.log(rule[2]) + probs[(i, k)][symbol1] + probs[(k, j)][symbol2]
+                                if (rule[0] not in table[(i, j)]) or \
+                                    (rule[0] in table[(i, j)] and prob > probs[(i, j)][rule[0]]):
+                                        table[(i, j)][rule[0]] = ((symbol1, i, k), (symbol2, k, j))
+                                        probs[(i, j)][rule[0]] = prob
+
+        # get result
         return table, probs
 
 
@@ -150,8 +182,8 @@ if __name__ == "__main__":
         parser = CkyParser(grammar)
         toks =['flights', 'from','miami', 'to', 'cleveland','.'] 
         # toks =['miami', 'flights','cleveland', 'from', 'to','.']
-        print(parser.is_in_language(toks))
-        #table,probs = parser.parse_with_backpointers(toks)
-        #assert check_table_format(chart)
-        #assert check_probs_format(probs)
+        # print(parser.is_in_language(toks))
+        table,probs = parser.parse_with_backpointers(toks)
+        assert check_table_format(table)
+        assert check_probs_format(probs)
         
